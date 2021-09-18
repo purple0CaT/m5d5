@@ -16,11 +16,42 @@ export default class NewBlogPost extends Component {
     };
     this.handleChange = this.handleChange.bind(this);
   }
-
   handleChange(value) {
     this.setState({ ...this.state, content: value });
   }
-
+  sendPostwithIng = async (e) => {
+    e.preventDefault();
+    // FORM DATA
+    const formData = new formData();
+    const authorData = JSON.stringify({
+      name: this.state.author.name,
+      avatar: this.state.author.avatar,
+    });
+    const readTime = JSON.stringify({
+      value: this.state.readTime.value,
+      unit: this.state.readTime.unit,
+    });
+    formData.append("category", this.state.category);
+    formData.append("title", this.state.title);
+    formData.append("readTime", readTime);
+    formData.append("author", authorData);
+    formData.append("content", this.state.content);
+    // SENDING
+    try {
+      let response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
+      let data = response.json();
+      if (response.ok) {
+        console.log(formData);
+      } else {
+        console.log(response, formData);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
   sendPost = async (e) => {
     const url = "http://localhost:3003/blogPosts/";
     e.preventDefault();

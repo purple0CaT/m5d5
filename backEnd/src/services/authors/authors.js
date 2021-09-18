@@ -43,7 +43,7 @@ authorStrive.post(
   checkAuthorId,
   multer({
     fileFilter: (req, file, cb) => {
-      if (file.mimetype != "image/jpeg" || file.mimetype != "image/png")
+      if (file.mimetype != "image/jpeg" && file.mimetype != "image/png")
         cb(createHttpError(400, "Format not suported!"), false);
       else cb(null, true);
     },
@@ -51,7 +51,7 @@ authorStrive.post(
   async (req, res, next) => {
     try {
       let typeFile = req.file.originalname.split(".").reverse()[0];
-      let nameOfFile = req.params.authorId + "." + typeFile;
+      let nameOfFile = `${req.params.authorId}.${typeFile}`;
       await saveAuthrPic(nameOfFile, req.file.buffer);
       // fitering and edditing the Authors url
       const authors = await getAuthor();

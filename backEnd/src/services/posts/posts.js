@@ -51,11 +51,17 @@ postStirve.get("/:postId", getIdMiddleware, async (req, res, next) => {
 postStirve.post(
   "/:postId/uploadCover",
   getIdMiddleware,
-  multer().single("coverPic"),
+  multer({
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype != "image/jpeg" && file.mimetype != "image/png")
+        cb(createHttpError(400, "Format not suported!"), false);
+      else cb(null, true);
+    },
+  }).single("coverPic"),
   async (req, res, next) => {
     try {
       let typeFile = req.file.originalname.split(".").reverse()[0];
-      let nameOfFile = req.params.postId + "." + typeFile;
+      let nameOfFile = `${req.params.postId}.${typeFile}`;
       await saveCoverrPic(nameOfFile, req.file.buffer);
       // fitering and edditing the Authors url
       const posts = await getPost();
@@ -83,6 +89,7 @@ postStirve.post("/", postMiddleware, async (req, res, next) => {
     try {
       const newPost = {
         ...req.body,
+        author: req.body.author,
         comments: [],
         _id: uniqid(),
         createdAt: new Date(),
