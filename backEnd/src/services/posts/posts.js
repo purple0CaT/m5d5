@@ -2,6 +2,7 @@ import express from "express";
 import createHttpError from "http-errors";
 import uniqid from "uniqid";
 import multer from "multer";
+import stringify from "json-stringify-safe";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { validationResult } from "express-validator";
@@ -80,28 +81,44 @@ postStirve.post(
   }
 );
 
-// POST
-postStirve.post("/", postMiddleware, async (req, res, next) => {
-  const errorList = validationResult(req);
-  if (!errorList.isEmpty()) {
-    next(createHttpError(400, { errorList }));
-  } else {
-    try {
-      const newPost = {
-        ...req.body,
-        author: req.body.author,
-        comments: [],
-        _id: uniqid(),
-        createdAt: new Date(),
-      };
-      const posts = await getPost();
-      posts.push(newPost);
-      //   save send
-      await writePost(posts);
-      res.status(200).send(newPost);
-    } catch (error) {
-      next(createHttpError(400, "Bad request"));
-    }
+// POST postMiddleware
+postStirve.post("/", multer().single("cover"), (req, res, next) => {
+  // const errorList = validationResult(req);
+  // if (!errorList.isEmpty()) {
+  //   next(createHttpError(400, { errorList }));
+  // } else {
+  let author = req.body.author;
+  let auth = author[0].split("{");
+  let obj = author
+    .replace("{", "")
+    .replace("}", "")
+    .replace(/"/g, "")
+    .replace(/:/g, "")
+    .split(" ");
+
+  // let myobj = JSON.parse(JSON.stringify(req.body.author));
+  // console.log(typeof myobj);
+  console.log(obj);
+  // console.log(auth[1]);
+
+  try {
+    const newPost = {
+      ...req.body,
+      author: req.body.author,
+      comments: [],
+      _id: uniqid(),
+      createdAt: new Date(),
+      image: req.file.originalname,
+    };
+    // const posts = await getPost();
+    // posts.push(newPost);
+    // //   save send
+    // await writePost(posts);
+    // console.log(req.body);
+    // console.log(req.file);
+    res.status(200).send([newPost]);
+  } catch (error) {
+    next(createHttpError(400, "Bad request"));
   }
 });
 // PUT

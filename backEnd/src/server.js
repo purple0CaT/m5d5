@@ -20,6 +20,8 @@ server.use(express.static(publicFolderPath));
 // body converter
 server.use(cors());
 server.use(express.json());
+server.use(express.urlencoded());
+
 // ==== ROUTES / ENDPOINTS ====
 server.use("/authors", authorStrive);
 server.use("/blogPosts", postStirve);
