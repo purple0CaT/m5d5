@@ -23,5 +23,10 @@
     "name": "Bri Cho",
     "avatar": "https://striveschool.ghost.io/content/images/2020/11/FBBRRZy5_400x400.jpg",
     "_id": 3214456
+  },
+  {
+    "name": "Ian",
+    "_id": "123kjwabn123sj",
+    "avatar": "http://localhost:3003/img/authors/123kjwabn123sj.png"
   }
 ]

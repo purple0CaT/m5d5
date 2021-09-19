@@ -12,10 +12,16 @@ export default class NewBlogPost extends Component {
       category: "",
       title: "",
       cover: "https://source.unsplash.com/random",
+      coverFile: "",
       readTime: { value: 1, unit: "minutes" },
-      author: { name: "Ian", avatar: "https://source.unsplash.com/random?1" },
+      author: {
+        name: "Ian",
+        _id: "123kjwabn123sj",
+        avatar: "https://source.unsplash.com/random?1",
+      },
       content: "This is created on frontEnd and saved in backend",
       img: "",
+      allAuthors: [],
     };
     this.handleChange = this.handleChange.bind(this);
   }
@@ -23,21 +29,21 @@ export default class NewBlogPost extends Component {
     this.setState({ ...this.state, content: val });
     console.log(val);
   }
+  componentDidMount() {
+    this.fetchAuthors();
+  }
   sendPostwithIng = async (e) => {
     e.preventDefault();
     const url = "http://localhost:3003/blogPosts/";
     // FORM DATA
     let formData = new FormData();
     //
-    let authorData = JSON.stringify({
-      name: this.state.author.name,
-      avatar: this.state.author.avatar,
-    });
-    let readTime = JSON.stringify({
-      value: this.state.readTime.value,
-      unit: this.state.readTime.unit,
-    });
-    formData.append("cover", this.state.img);
+    let authorData = JSON.stringify(this.state.author);
+    let readTime = JSON.stringify(this.state.readTime);
+
+    formData.append("coverImg", this.state.coverFile);
+    formData.append("authimg", this.state.img);
+    formData.append("cover", this.state.cover);
     formData.append("category", this.state.category);
     formData.append("title", this.state.title);
     formData.append("readTime", readTime);
@@ -45,10 +51,6 @@ export default class NewBlogPost extends Component {
     formData.append("content", this.state.content);
 
     let boundaryId = uniqid();
-    // for (let form of formData) {
-    //   console.log(form);
-    // }
-
     // SENDING;
     try {
       let response = await fetch(url, {
@@ -59,9 +61,9 @@ export default class NewBlogPost extends Component {
           boundary: boundaryId,
         },
       });
-      let data = await response.json();
+      // let data = await response.json();
       if (response.ok) {
-        console.log(data);
+        console.log("Sended!");
       } else {
         console.log(formData);
       }
@@ -69,22 +71,21 @@ export default class NewBlogPost extends Component {
       console.log(err);
     }
   };
-  // OK
-  sendPost = async (e) => {
-    const url = "http://localhost:3003/blogPosts/";
-    e.preventDefault();
+  // All authors
+  fetchAuthors = async () => {
+    const url = "http://localhost:3003/authors/";
     try {
       let response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(this.state),
+        method: "GET",
         headers: {
           "Content-type": "application/json",
         },
       });
-      let data = response.json();
+      let data = await response.json();
       if (response.ok) {
-        console.log("Successfuly posted!");
+        console.log("Successfuly fetched!");
         console.log(data);
+        this.setState({ ...this.state, allAuthors: data });
       }
     } catch (err) {
       console.log(err);
@@ -95,6 +96,9 @@ export default class NewBlogPost extends Component {
       <Container className="new-blog-container">
         <Form className="mt-5" onSubmit={this.sendPostwithIng}>
           <Form.Group controlId="blog-cover" className="mt-3">
+            <p className=" my-2 font-weight-light" style={{ fontSize: "2rem" }}>
+              New post!
+            </p>
             <Form.Label>Cover image</Form.Label>
             <Form.Control
               size="lg"
@@ -105,6 +109,21 @@ export default class NewBlogPost extends Component {
               }
             />
           </Form.Group>
+          <p className=" my-2 font-weight-light" style={{ fontSize: "1.5rem" }}>
+            or upload
+          </p>
+          <Form.Group>
+            <Form.File
+              id="blog-img"
+              className="my-4"
+              label=""
+              // value={this.state.coverFile}
+              onChange={(e) =>
+                this.setState({ ...this.state, coverFile: e.target.files[0] })
+              }
+            />
+          </Form.Group>
+          <hr />
           <Form.Group controlId="blog-form" className="mt-3">
             <Form.Label>Title</Form.Label>
             <Form.Control
@@ -143,7 +162,34 @@ export default class NewBlogPost extends Component {
               // }
             />
           </Form.Group>
-          <h2 className="font-weight-light">Author</h2>
+          <hr />
+          <p className=" my-2 font-weight-light" style={{ fontSize: "2.5rem" }}>
+            Author details
+          </p>
+          <Form.Group controlId="blog-authorsLib" className="mt-3">
+            <Form.Label>Existing authors</Form.Label>
+            <Form.Control
+              size="lg"
+              as="select"
+              onChange={(e) =>
+                this.setState({
+                  ...this.state,
+                  author: this.state.allAuthors.filter(
+                    (auth) => auth._id == e.target.value
+                  ),
+                })
+              }
+            >
+              {this.state.allAuthors.map((authr) => (
+                <option key={authr._id + authr.name} value={authr._id}>
+                  {authr.name}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+          <p className=" my-2 font-weight-light" style={{ fontSize: "1.5rem" }}>
+            Or create new one!
+          </p>
           <Form.Group controlId="blog-author" className="mt-3">
             <Form.Label>Name</Form.Label>
             <Form.Control

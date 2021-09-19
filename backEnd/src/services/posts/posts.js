@@ -12,7 +12,16 @@ import {
   putMiddleware,
   getTitleMiddleware,
 } from "./checkMiddleware.js";
-import { writePost, getPost, coverPath, saveCoverrPic } from "../fs-tools.js";
+import { converString } from "./postFunctions.js";
+import {
+  writePost,
+  getPost,
+  coverPath,
+  saveCoverrPic,
+  saveAuthrPic,
+  getAuthor,
+  writeAuthor,
+} from "../fs-tools.js";
 
 const postStirve = express.Router();
 
@@ -81,46 +90,89 @@ postStirve.post(
   }
 );
 
-// POST postMiddleware
-postStirve.post("/", multer().single("cover"), (req, res, next) => {
-  // const errorList = validationResult(req);
-  // if (!errorList.isEmpty()) {
-  //   next(createHttpError(400, { errorList }));
-  // } else {
-  let author = req.body.author;
-  let auth = author[0].split("{");
-  let obj = author
-    .replace("{", "")
-    .replace("}", "")
-    .replace(/"/g, "")
-    .replace(/:/g, "")
-    .split(" ");
+// POST IMAGE FORM postMiddleware
+postStirve.post(
+  "/",
+  multer()
+    // .fields([
+    //   { name: "coverImg", maxCount: 1 },
+    //   { name: "authimg", maxCount: 1 },
+    // ]),
+    .any(),
+  async (req, res, next) => {
+    console.log(req.files);
+    console.log(req.body);
+    res.status(200).send("OK");
+    const errorList = validationResult(req);
+    if (!errorList.isEmpty()) {
+      next(createHttpError(400, { errorList }));
+    } else {
+      // VARIABLES
+      let author = converString(req.body.author);
+      let readTime = converString(req.body.readTime);
+      let postId = uniqid();
+      let authorId = author._id;
+      let coverId = "";
+      let avatarId = "";
+      // Avatar SAVE
+      if (req.files.authimg) {
+        let typeFile = req.files.authimg[0].originalname
+          .split(".")
+          .reverse()[0];
+        avatarId = `http://localhost:3003/img/authors/${authorId}.${typeFile}`;
+        await saveAuthrPic(
+          `${authorId}.${typeFile}`,
+          req.files.authimg[0].buffer
+        );
+        author.avatar = avatarId;
+      } else {
+        avatarId = req.body.author.avatar;
+        author.avatar = avatarId;
+      }
+      // Cover SAVE
+      if (req.files.coverImg) {
+        let typeFile = req.files.coverImg[0].originalname
+          .split(".")
+          .reverse()[0];
+        coverId = `http://localhost:3003/img/covers/${postId}.${typeFile}`;
+        await saveCoverrPic(
+          `${postId}.${typeFile}`,
+          req.files.coverImg[0].buffer
+        );
+        coverId = req.body.cover;
+      } else {
+        console.log("else");
+        coverId = req.body.cover;
+      }
+      // CREATE NEW AUTHOR IF NOT EXIST
 
-  // let myobj = JSON.parse(JSON.stringify(req.body.author));
-  // console.log(typeof myobj);
-  console.log(obj);
-  // console.log(auth[1]);
-
-  try {
-    const newPost = {
-      ...req.body,
-      author: req.body.author,
-      comments: [],
-      _id: uniqid(),
-      createdAt: new Date(),
-      image: req.file.originalname,
-    };
-    // const posts = await getPost();
-    // posts.push(newPost);
-    // //   save send
-    // await writePost(posts);
-    // console.log(req.body);
-    // console.log(req.file);
-    res.status(200).send([newPost]);
-  } catch (error) {
-    next(createHttpError(400, "Bad request"));
+      let authorLib = await getAuthor();
+      let checkAuthor = authorLib.filter((auth) => auth._id == author._id);
+      if (!checkAuthor) {
+        authorLib.push(author);
+        await writeAuthor(authorLib);
+      }
+      // new post
+      try {
+        const newPost = {
+          ...req.body,
+          cover: coverId,
+          author: author,
+          readTime: readTime,
+          comments: [],
+          _id: postId,
+          createdAt: new Date(),
+        };
+        const posts = await getPost();
+        posts.push(newPost);
+        await writePost(posts);
+        res.status(200).send("Success!");
+      } catch (error) {
+        next(createHttpError(400, "Bad request"));
+      }
+    }
   }
-});
+);
 // PUT
 postStirve.put(
   "/:postId",
