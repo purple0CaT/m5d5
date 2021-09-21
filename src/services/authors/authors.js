@@ -72,7 +72,7 @@ authorStrive.post(
   }
 );
 // POST
-authorStrive.post("/", checkPostValid, async (req, res, next) => {
+authorStrive.post("/", async (req, res, next) => {
   const errorList = validationResult(req);
   if (!errorList.isEmpty()) {
     next(createHttpError(400, { errorList }));
