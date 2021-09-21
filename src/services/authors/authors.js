@@ -80,9 +80,6 @@ authorStrive.post("/", checkPostValid, async (req, res, next) => {
     // true
     const authors = await getAuthor();
     try {
-      const authorCheck = authors.find(
-        (author) => author.email === req.body.email
-      );
       const newAuthor = { ...req.body, _id: uniqid() };
       authors.push(newAuthor);
       // rewrite
