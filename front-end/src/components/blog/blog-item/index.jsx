@@ -15,6 +15,7 @@ export default class BlogItem extends Component {
           </Card.Body>
           <Card.Footer>
             <BlogAuthor {...author} />
+            
           </Card.Footer>
         </Card>
       </Link>

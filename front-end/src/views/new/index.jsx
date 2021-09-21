@@ -175,7 +175,7 @@ export default class NewBlogPost extends Component {
                 this.setState({
                   ...this.state,
                   author: this.state.allAuthors.filter(
-                    (auth) => auth._id == e.target.value
+                    (auth) => auth._id === e.target.value
                   ),
                 })
               }

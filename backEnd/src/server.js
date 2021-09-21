@@ -13,12 +13,25 @@ import {
 } from "./errorHandler.js";
 // === Server ===
 const server = express();
-const port = 3003;
+const port = process.env.PORT;
 const publicFolderPath = join(process.cwd(), "public");
 // === COnfiguration | Before endpoints! ===
 server.use(express.static(publicFolderPath));
-// body converter
-server.use(cors());
+// COSR converter
+const whiteList = [process.env.FE_DEV_URL, process.env.FE_PROD_URL];
+
+const corsOpts = {
+  origin: function (origin, next) {
+    console.log(origin);
+    if (!origin || whiteList.indexOf(origin) !== -1) {
+      next(null, true);
+    } else {
+      next(new Error("Origin not alowed!"));
+    }
+  },
+};
+// Convreers
+server.use(cors(corsOpts));
 server.use(express.json());
 server.use(express.urlencoded());
 
@@ -31,5 +44,7 @@ server.use(forbiddenFoundErrHandl);
 server.use(notFoundErrHandl);
 server.use(genericErrHandl);
 // Listen
-server.listen(port, () => {});
+server.listen(port, () => {
+  console.log(port);
+});
 console.table(listEndpoints(server));

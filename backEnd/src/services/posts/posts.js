@@ -90,9 +90,10 @@ postStirve.post(
   }
 );
 
-// POST IMAGE FORM postMiddleware
+// POST IMAGE FORM
 postStirve.post(
   "/",
+  postMiddleware,
   multer()
     // .fields([
     //   { name: "coverImg", maxCount: 1 },

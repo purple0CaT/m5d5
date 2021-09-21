@@ -2,7 +2,9 @@ import React, { Component } from "react";
 import { Container, Image } from "react-bootstrap";
 import { withRouter } from "react-router";
 import BlogAuthor from "../../components/blog/blog-author";
+import DeleteBtn from "./DeleteBtn";
 import "./styles.css";
+import UpdateBtn from "./UpdateBtn";
 class Blog extends Component {
   state = {
     blog: {},
@@ -57,6 +59,10 @@ class Blog extends Component {
             </div>
 
             <div dangerouslySetInnerHTML={{ __html: blog[0].content }}></div>
+            <div className="d-flex flex-gap">
+              <DeleteBtn />
+              <UpdateBtn />
+            </div>
           </Container>
         </div>
       );
